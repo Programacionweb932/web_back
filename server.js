@@ -2,7 +2,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const app = express();
-const port = 5000;
+//const port = 5000;
 
 // Middleware
 app.use(bodyParser.json());
@@ -55,5 +55,5 @@ app.post('/api/login', (req, res) => {
 
 // Iniciar el servidor
 app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
+  console.log(`Servidor corriendo en https://web-back-nu.vercel.app`);
 });
