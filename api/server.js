@@ -9,16 +9,15 @@ const app = express();
 app.use(bodyParser.json());
 
 // Configuración de CORS para permitir solicitudes desde tu frontend
-app.use(cors({
-  origin: 'https://web-front-inky.vercel.app', // Permitir solo este origen
-  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
-  allowedHeaders: ['Content-Type'], // Encabezados permitidos
-  credentials: true, // Permitir cookies si es necesario
-}));
+const cors = require('cors');
 
-// Responde a solicitudes OPTIONS (preflight request)
-app.options('*', cors()); // Esto es importante para la respuesta de la solicitud preflight
+// Configuración de CORS
+const corsOptions = {
+  origin: 'https://web-front-inky.vercel.app', // Permite solicitudes solo desde tu frontend
+  methods: ['GET', 'POST'], // Permite métodos GET y POST
+};
 
+app.use(cors(corsOptions)); // Usa la configuración de CORS
 // Conectar a MongoDB
 const MONGO_URI = process.env.MONGO_URI;
 if (!MONGO_URI) {
