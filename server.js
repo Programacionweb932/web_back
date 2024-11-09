@@ -4,7 +4,7 @@ const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
-const bcrypt = require('bcrypt');
+const bcrypt = require('bcryptjs');
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -26,11 +26,14 @@ if (!mongoURI) {
   process.exit(1);  // Detener la aplicación si no hay URI
 }
 
+console.log('Conectando a MongoDB...');
 mongoose.connect(mongoURI)
-  .then(() => console.log('Conectado a MongoDB'))
+  .then(() => {
+    console.log('Conectado a MongoDB');
+  })
   .catch(err => {
     console.error('Error al conectar a MongoDB:', err);
-    process.exit(1);  // Detener la aplicación si la conexión falla
+    process.exit(1);
   });
 
 // Ruta para registrar un nuevo usuario
