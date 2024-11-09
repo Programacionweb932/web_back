@@ -7,7 +7,16 @@ require('dotenv').config();
 
 const app = express();
 app.use(bodyParser.json());
-app.use(cors());
+
+// Configura CORS para permitir solo solicitudes desde tu frontend específico
+app.use(cors({
+  origin: 'https://web-front-inky.vercel.app', // URL de tu frontend
+  methods: ['GET', 'POST'], // Métodos permitidos
+  allowedHeaders: ['Content-Type'], // Encabezados permitidos
+}));
+
+// Responde a solicitudes OPTIONS
+app.options('*', cors()); // Esto asegura que las solicitudes preflight OPTIONS sean respondidas
 
 // Conectar a MongoDB
 const mongoURI = process.env.MONGO_URI;
