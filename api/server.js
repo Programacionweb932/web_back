@@ -7,7 +7,7 @@ require('dotenv').config();
 
 const app = express();
 
-/
+
 // Conectar a MongoDB
 const mongoURI = process.env.MONGO_URI;
 if (!mongoURI) {
