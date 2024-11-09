@@ -13,9 +13,10 @@ app.use(cors({
   origin: 'https://web-front-inky.vercel.app', // URL de tu frontend
   methods: ['GET', 'POST'], // Métodos permitidos
   allowedHeaders: ['Content-Type'], // Encabezados permitidos
+  credentials: true // Permitir el envío de cookies (si es necesario)
 }));
 
-// Responde a solicitudes OPTIONS
+// Responde a solicitudes OPTIONS (important for preflight requests)
 app.options('*', cors()); // Esto asegura que las solicitudes preflight OPTIONS sean respondidas
 
 // Conectar a MongoDB
