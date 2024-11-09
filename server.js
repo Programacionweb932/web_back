@@ -3,7 +3,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-
+require('dotenv').config();
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -11,21 +11,21 @@ const userSchema = new mongoose.Schema({
   password: { type: String, required: true }
 });
 
-const User = mongoose.model('User', userSchema); 
+const User = mongoose.model('User', userSchema);
 
 const app = express();
-const port = 5000;
-
 
 app.use(bodyParser.json());
 app.use(cors());
 
 // Conectar a MongoDB
-const mongoURI = 'mongodb+srv://programacionweb932:Sistemas2024*@cluster0.so2ay.mongodb.net/programacionweb?retryWrites=true&w=majority';
-mongoose.connect(mongoURI)
+const mongoURI = process.env.MONGO_URI;
+mongoose.connect(mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true
+})
   .then(() => console.log('Conectado a MongoDB'))
   .catch(err => console.error('Error al conectar a MongoDB:', err));
-
 
 app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
@@ -35,16 +35,12 @@ app.post('/api/register', async (req, res) => {
   }
 
   try {
-    
-    const userExists = await User.findOne({ username });
+    const userExists = await User.findOne({ $or: [{ username }, { email }] });
     if (userExists) {
-      return res.status(400).json({ message: 'El nombre de usuario ya existe' });
+      return res.status(400).json({ message: 'El nombre de usuario o email ya existe' });
     }
 
-    
     const hashedPassword = await bcrypt.hash(password, 10);
-
-    
     const newUser = new User({ username, email, password: hashedPassword });
     await newUser.save();
 
@@ -55,7 +51,6 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
 
@@ -64,13 +59,11 @@ app.post('/api/login', async (req, res) => {
   }
 
   try {
-    
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(401).json({ message: 'Contraseña incorrecta' });
@@ -83,7 +76,4 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Iniciar servidor
-app.listen(port, () => {
-  console.log(`Servidor corriendo en http://localhost:${port}`);
-});
+module.exports = app;
