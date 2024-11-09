@@ -1,31 +1,32 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors');
+const cors = require('cors'); // Asegúrate de importar cors
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const app = express();
-app.use(bodyParser.json());
-
-// Configuración de CORS para permitir solicitudes desde tu frontend
-const cors = require('cors');
 
 // Configuración de CORS
 const corsOptions = {
-  origin: 'https://web-front-inky.vercel.app', // Permite solicitudes solo desde tu frontend
-  methods: ['GET', 'POST'], // Permite métodos GET y POST
+  origin: 'https://web-front-inky.vercel.app', // Asegúrate de que esta URL coincida con la de tu frontend
+  methods: ['GET', 'POST'],
+  allowedHeaders: ['Content-Type'],
 };
 
-app.use(cors(corsOptions)); // Usa la configuración de CORS
+// Aplica CORS al servidor
+app.use(cors(corsOptions));
+
+app.use(bodyParser.json());
+
 // Conectar a MongoDB
-const MONGO_URI = process.env.MONGO_URI;
-if (!MONGO_URI) {
+const mongoURI = process.env.MONGO_URI;
+if (!mongoURI) {
   console.error('Error: Mongo URI no está definida.');
   process.exit(1);
 }
 
-mongoose.connect(MONGO_URI)
+mongoose.connect(mongoURI)
   .then(() => {
     console.log('Conectado a MongoDB');
   })
