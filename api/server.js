@@ -8,25 +8,25 @@ require('dotenv').config();
 const app = express();
 app.use(bodyParser.json());
 
-// Configura CORS para permitir solo solicitudes desde tu frontend específico
+// Configuración de CORS para permitir solicitudes desde tu frontend
 app.use(cors({
-  origin: 'https://web-front-inky.vercel.app', // URL de tu frontend
-  methods: ['GET', 'POST'], // Métodos permitidos
+  origin: 'https://web-front-inky.vercel.app', // Permitir solo este origen
+  methods: ['GET', 'POST', 'PUT', 'DELETE'], // Métodos permitidos
   allowedHeaders: ['Content-Type'], // Encabezados permitidos
-  credentials: true // Permitir el envío de cookies (si es necesario)
+  credentials: true, // Permitir cookies si es necesario
 }));
 
-// Responde a solicitudes OPTIONS (important for preflight requests)
-app.options('*', cors()); // Esto asegura que las solicitudes preflight OPTIONS sean respondidas
+// Responde a solicitudes OPTIONS (preflight request)
+app.options('*', cors()); // Esto es importante para la respuesta de la solicitud preflight
 
 // Conectar a MongoDB
-const mongoURI = process.env.MONGO_URI;
-if (!mongoURI) {
+const MONGO_URI = process.env.MONGO_URI;
+if (!MONGO_URI) {
   console.error('Error: Mongo URI no está definida.');
   process.exit(1);
 }
 
-mongoose.connect(mongoURI)
+mongoose.connect(MONGO_URI)
   .then(() => {
     console.log('Conectado a MongoDB');
   })
