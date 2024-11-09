@@ -21,9 +21,17 @@ app.use(cors());
 
 // Conectar a MongoDB usando la URI desde las variables de entorno
 const mongoURI = process.env.MONGO_URI;
+if (!mongoURI) {
+  console.error('Error: Mongo URI no está definida.');
+  process.exit(1);  // Detener la aplicación si no hay URI
+}
+
 mongoose.connect(mongoURI)
   .then(() => console.log('Conectado a MongoDB'))
-  .catch(err => console.error('Error al conectar a MongoDB:', err));
+  .catch(err => {
+    console.error('Error al conectar a MongoDB:', err);
+    process.exit(1);  // Detener la aplicación si la conexión falla
+  });
 
 // Ruta para registrar un nuevo usuario
 app.post('/api/register', async (req, res) => {
