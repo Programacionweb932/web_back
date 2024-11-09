@@ -1,9 +1,10 @@
+require('dotenv').config(); // Cargar las variables de entorno desde el archivo .env
+
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcrypt');
-require('dotenv').config();
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -18,12 +19,13 @@ const app = express();
 app.use(bodyParser.json());
 app.use(cors());
 
-// Conectar a MongoDB
-const mongoURI = 'mongodb+srv://programacionweb932:Sistemas2024*@cluster0.so2ay.mongodb.net/programacionweb?retryWrites=true&w=majority';
+// Conectar a MongoDB usando la URI desde las variables de entorno
+const mongoURI = process.env.MONGO_URI;
 mongoose.connect(mongoURI)
   .then(() => console.log('Conectado a MongoDB'))
   .catch(err => console.error('Error al conectar a MongoDB:', err));
 
+// Ruta para registrar un nuevo usuario
 app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
@@ -47,6 +49,7 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
+// Ruta para iniciar sesión
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
@@ -71,4 +74,5 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-module.exports = app;  // Asegúrate de exportar la app, no usar app.listen()
+// Exportar la aplicación (para usarla en entornos como Vercel)
+module.exports = app;
