@@ -1,21 +1,20 @@
 const express = require('express');
 const bodyParser = require('body-parser');
-const cors = require('cors'); // Asegúrate de importar cors
+const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
 
 const app = express();
 
-// Configuración de CORS
-const corsOptions = {
-  origin: 'https://web-front-inky.vercel.app', // Asegúrate de que esta URL coincida con la de tu frontend
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type'],
-};
-
-// Aplica CORS al servidor
-app.use(cors(corsOptions));
+// Configuración de CORS (permite todos los orígenes)
+app.use(cors({
+  origin: '*', // Permitir todos los orígenes
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],
+  allowedHeaders: ['Content-Type', 'Authorization'], 
+  preflightContinue: false,
+  optionsSuccessStatus: 200,
+}));
 
 app.use(bodyParser.json());
 
