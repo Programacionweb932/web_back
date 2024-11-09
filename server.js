@@ -1,10 +1,9 @@
-require('dotenv').config(); // Cargar las variables de entorno desde el archivo .env
-
 const express = require('express');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
+require('dotenv').config(); // Asegúrate de que dotenv esté al principio
 
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
@@ -35,6 +34,11 @@ mongoose.connect(mongoURI)
     console.error('Error al conectar a MongoDB:', err);
     process.exit(1);
   });
+
+// Ruta para la raíz del servidor
+app.get('/', (req, res) => {
+  res.send('Bienvenido a la API. Usa /api/register para registrarte y /api/login para iniciar sesión.');
+});
 
 // Ruta para registrar un nuevo usuario
 app.post('/api/register', async (req, res) => {
