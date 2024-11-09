@@ -3,29 +3,19 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
-require('dotenv').config(); // Asegúrate de que dotenv esté al principio
-
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
-});
-
-const User = mongoose.model('User', userSchema);
+require('dotenv').config();
 
 const app = express();
-
 app.use(bodyParser.json());
 app.use(cors());
 
-// Conectar a MongoDB usando la URI desde las variables de entorno
+// Conectar a MongoDB
 const mongoURI = process.env.MONGO_URI;
 if (!mongoURI) {
   console.error('Error: Mongo URI no está definida.');
-  process.exit(1);  // Detener la aplicación si no hay URI
+  process.exit(1);
 }
 
-console.log('Conectando a MongoDB...');
 mongoose.connect(mongoURI)
   .then(() => {
     console.log('Conectado a MongoDB');
@@ -35,12 +25,19 @@ mongoose.connect(mongoURI)
     process.exit(1);
   });
 
-// Ruta para la raíz del servidor
+const userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true }
+});
+
+const User = mongoose.model('User', userSchema);
+
+// Rutas
 app.get('/', (req, res) => {
   res.send('Bienvenido a la API. Usa /api/register para registrarte y /api/login para iniciar sesión.');
 });
 
-// Ruta para registrar un nuevo usuario
 app.post('/api/register', async (req, res) => {
   const { username, email, password } = req.body;
   if (!username || !email || !password) {
@@ -64,7 +61,6 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-// Ruta para iniciar sesión
 app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
   if (!username || !password) {
@@ -89,5 +85,4 @@ app.post('/api/login', async (req, res) => {
   }
 });
 
-// Exportar la aplicación (para usarla en entornos como Vercel)
 module.exports = app;
