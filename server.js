@@ -19,8 +19,8 @@ app.use(bodyParser.json());
 app.use(cors());
 
 // Conectar a MongoDB
-const mongoURI = process.env.MONGO_URI;
-mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
+const mongoURI = 'mongodb+srv://programacionweb932:Sistemas2024*@cluster0.so2ay.mongodb.net/programacionweb?retryWrites=true&w=majority';
+mongoose.connect(mongoURI)
   .then(() => console.log('Conectado a MongoDB'))
   .catch(err => console.error('Error al conectar a MongoDB:', err));
 
