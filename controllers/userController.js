@@ -8,10 +8,10 @@ const User = require('../models/user');
 
 //                        Ruta de login
 const postLogin = async (req, res) => {
-    const { usuario, contraseña } = req.body;
+    const { username, password } = req.body;
   
     // Verificar que se proporcionen usuario y contraseña
-    if (!usuario || !contraseña) {
+    if (!username || !password) {
       return res.status(400).json({ status: "Error", message: "Usuario y contraseña son requeridos." });
     }
   
@@ -25,7 +25,7 @@ const postLogin = async (req, res) => {
       }
   
       // Encriptar la contraseña proporcionada
-      const hashedPassword = CryptoJS.SHA256(contraseña).toString();
+      const hashedPassword = CryptoJS.SHA256(password).toString();
   
       // Comparar la contraseña encriptada
       if (user.psw !== hashedPassword) {
