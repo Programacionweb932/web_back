@@ -3,7 +3,7 @@ const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 require('dotenv').config();
-const router = require('./routes');
+const router = require('../routes');
 
 const app = express();
 
@@ -26,15 +26,6 @@ mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
     console.error('Error al conectar a MongoDB:', err);
     process.exit(1);
   });
-
-// Definir el esquema y modelo de usuario
-const userSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
-});
-
-const User = mongoose.model('User', userSchema);
 
 // Rutas
 app.get('/', (req, res) => {
