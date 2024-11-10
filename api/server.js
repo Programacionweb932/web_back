@@ -7,6 +7,9 @@ require('dotenv').config();
 
 const app = express();
 
+app.use(urlencoded({extended: true}));
+app.use(json());
+app.use(cors());
 
 // Conectar a MongoDB
 const mongoURI = process.env.MONGO_URI;
