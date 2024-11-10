@@ -5,17 +5,13 @@ const User = require('../models/user'); // Asegúrate de que el modelo 'User' es
 const userController = require('../controllers/userController');
 const router = express.Router();
 
-
-
-
 // Ruta de bienvenida
 router.get('/', (req, res) => {
   res.send('Bienvenido al back del mundo de la tecnologia');
 });
 
-router.post('/api/login', userController.postLogin);
-router.post('/api/register', userController.postRegistro);
-
-
+// Rutas para login y registro
+router.post('/login', userController.postLogin);
+router.post('/register', userController.postRegistro);
 
 module.exports = router;
