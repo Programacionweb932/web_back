@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 
-router.get('/', (req, res) => {
+router.get('/api', (req, res) => {
   res.send('Bienvenido al back del mundo de la tecnologia');
 });
 
