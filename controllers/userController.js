@@ -1,4 +1,5 @@
 const { ObjectId } = require('mongodb');
+const pool = require('../mongo');
 const express = require('express');
 const router = express.Router();
 const bcrypt = require('bcryptjs');
@@ -55,8 +56,53 @@ const postRegistro = async (req, res) => {
     }
   };
 
+
+  //            Registro Administrador
+  const postRegistroAdmin = async (req, res) => {
+    const { usuario, contraseña } = req.body;
+  
+    // Validar que se hayan proporcionado usuario y contraseña
+    if (!usuario || !contraseña) {
+      return res.status(400).json({ status: "Error", message: "Usuario y contraseña son requeridos." });
+    }
+  
+    const hashedPassword = CryptoJS.SHA256(contraseña).toString(); // Encriptar la contraseña correctamente
+    console.log("Hashed Password during Registration:", hashedPassword);
+  
+    try {
+      // Verificar si el usuario ya existe
+      const userExists = await pool.db('programacionweb').collection('users').findOne({ usuario: usuario });
+      if (userExists) {
+        return res.status(400).json({ status: "UsuarioYaExiste", message: "El usuario ya existe" });
+      }
+  
+      // Insertar el nuevo usuario en la colección users
+      const newUser = {
+        usuario: usuario,
+        psw: hashedPassword,
+        role: 'Admin', // Asignar un rol por defecto
+      };
+  
+      const userResult = await pool.db('programacionweb').collection('users').insertOne(newUser);
+      const userId = userResult.insertedId; // Obtener el ID del usuario insertado
+  
+      // Insertar información adicional del usuario en la colección user_info
+      const userInfo = {
+        user_id: userId,
+      };
+  
+      await pool.db('programacionweb').collection('user_info').insertOne(userInfo);
+  
+      res.status(201).json({ status: "UsuarioRegistrado", user: usuario, role: newUser.role });
+    } catch (error) {
+      console.error('Error registrando usuario:', error);
+      res.status(500).json({ status: "Error", message: "Internal Server Error" });
+    }
+  };
+
   module.exports = {
 
     postLogin,
-    postRegistro
+    postRegistro,
+    postRegistroAdmin
   }

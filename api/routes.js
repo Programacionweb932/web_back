@@ -13,5 +13,6 @@ router.get('/', (req, res) => {
 // Rutas para login y registro
 router.post('/login', userController.postLogin);
 router.post('/register', userController.postRegistro);
+router.post('/Adminregister', userController.postRegistroAdmin);
 
 module.exports = router;
