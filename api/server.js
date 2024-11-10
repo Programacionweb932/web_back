@@ -10,6 +10,10 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
+app.get('/', (req, res) => {
+  res.send('Bienvenido a la API. Usa /api/register para registrarte y /api/login para iniciar sesión.');
+});
+
 // Conectar a MongoDB
 const mongoURI = process.env.MONGO_URI;
 if (!mongoURI) {
