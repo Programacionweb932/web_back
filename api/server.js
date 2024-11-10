@@ -1,5 +1,4 @@
 const express = require('express');
-const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
@@ -7,8 +6,8 @@ require('dotenv').config();
 
 const app = express();
 
-app.use(urlencoded({extended: true}));
-app.use(json());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use(cors());
 
 // Conectar a MongoDB
@@ -18,7 +17,7 @@ if (!mongoURI) {
   process.exit(1);
 }
 
-mongoose.connect(mongoURI)
+mongoose.connect(mongoURI, { useNewUrlParser: true, useUnifiedTopology: true })
   .then(() => {
     console.log('Conectado a MongoDB');
   })
@@ -27,6 +26,7 @@ mongoose.connect(mongoURI)
     process.exit(1);
   });
 
+// Definir el esquema y modelo de usuario
 const userSchema = new mongoose.Schema({
   username: { type: String, required: true, unique: true },
   email: { type: String, required: true, unique: true },
@@ -85,6 +85,12 @@ app.post('/api/login', async (req, res) => {
     console.error('Error en el login:', error);
     return res.status(500).json({ message: 'Error al iniciar sesión' });
   }
+});
+
+// Iniciar el servidor
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+  console.log(`Servidor escuchando en el puerto ${PORT}`);
 });
 
 module.exports = app;
