@@ -8,25 +8,41 @@ const User = require('../models/user');
 
 //                        Ruta de login
 const postLogin = async (req, res) => {
+    const { usuario, contraseña } = req.body;
+  
+    // Verificar que se proporcionen usuario y contraseña
+    if (!usuario || !contraseña) {
+      return res.status(400).json({ status: "Error", message: "Usuario y contraseña son requeridos." });
+    }
+  
     try {
-      const { username, password } = req.body;
-      console.log('Request received for login:', { username, password });
+      // Buscar el usuario en la base de datos
+      const user = await pool.db('programacionweb').collection('users').findOne({ usuario });
   
-      const user = await User.findOne({ username });
+      // Comprobar si el usuario existe
       if (!user) {
-        return res.status(400).json({ msg: 'Usuario no encontrado' });
+        return res.status(401).json({ status: "CredencialesIncorrectas", message: "Usuario o contraseña incorrectos" });
       }
   
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return res.status(400).json({ msg: 'Contraseña incorrecta' });
+      // Encriptar la contraseña proporcionada
+      const hashedPassword = CryptoJS.SHA256(contraseña).toString();
+  
+      // Comparar la contraseña encriptada
+      if (user.psw !== hashedPassword) {
+        return res.status(401).json({ status: "CredencialesIncorrectas", message: "Usuario o contraseña incorrectos" });
       }
   
-      const token = jwt.sign({ userId: user._id }, 'secret', { expiresIn: '1h' });
-      res.json({ token });
-    } catch (err) {
-      console.error('Error in login:', err);
-      res.status(500).json({ msg: 'Error del servidor' });
+      // Usuario autenticado exitosamente
+      // Asegúrate de enviar el rol del usuario junto con la respuesta
+      return res.json({
+        status: "Bienvenido",
+        user: usuario,
+        role: user.role,  // Aquí se asegura que el rol es enviado
+        _id: user._id
+      });
+    } catch (error) {
+      console.error('Error fetching user:', error);
+      return res.status(500).json({ status: "Error", message: "Error interno del servidor" });
     }
   };
 
