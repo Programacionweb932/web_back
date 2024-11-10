@@ -11,7 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 app.get('/', (req, res) => {
-  res.send('Bienvenido a la API. Usa /api/register para registrarte y /api/login para iniciar sesión.');
+  res.send('Bienvenido al Back del mundo de la tecnologia');
 });
 
 // Conectar a MongoDB
