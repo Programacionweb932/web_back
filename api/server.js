@@ -10,6 +10,11 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(cors());
 
+
+router.get('/', (req, res) => {
+  res.send('Bienvenido al back del mundo de la tecnologia');
+});
+
 // Conectar a MongoDB
 const mongoURI = process.env.MONGO_URI;
 if (!mongoURI) {
