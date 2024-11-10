@@ -1,32 +1,32 @@
 const { ObjectId } = require('mongodb');
 const express = require('express');
 const router = express.Router();
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
+const User = require('../models/user'); 
 
 
 //                        Ruta de login
 const postLogin = async (req, res) => {
-    const { username, password } = req.body;
-  
     try {
-      // Buscar el usuario en la base de datos
+      const { username, password } = req.body;
+      console.log('Request received for login:', { username, password });
+  
       const user = await User.findOne({ username });
       if (!user) {
-        return res.status(400).json({ error: 'Usuario no encontrado' });
+        return res.status(400).json({ msg: 'Usuario no encontrado' });
       }
   
-      // Verificar la contraseña
-      const isPasswordValid = await bcrypt.compare(password, user.password);
-      if (!isPasswordValid) {
-        return res.status(400).json({ error: 'Contraseña incorrecta' });
+      const isMatch = await bcrypt.compare(password, user.password);
+      if (!isMatch) {
+        return res.status(400).json({ msg: 'Contraseña incorrecta' });
       }
   
-      // Generar un token JWT
-      const token = jwt.sign({ userId: user._id }, 'secretoDelToken', { expiresIn: '1h' });
-  
-      res.status(200).json({ message: 'Login exitoso', token });
-    } catch (error) {
-      console.error('Error en el login:', error);
-      res.status(500).json({ error: 'Error en el servidor durante el login' });
+      const token = jwt.sign({ userId: user._id }, 'secret', { expiresIn: '1h' });
+      res.json({ token });
+    } catch (err) {
+      console.error('Error in login:', err);
+      res.status(500).json({ msg: 'Error del servidor' });
     }
   };
 
