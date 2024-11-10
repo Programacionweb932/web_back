@@ -56,7 +56,7 @@ const postRegistro = async (req, res) => {
     }
   };
 
-  module.exports ={
+  module.exports = {
 
     postLogin,
     postRegistro

@@ -10,11 +10,11 @@ const router = express.Router();
 
 // Ruta de bienvenida
 router.get('/', (req, res) => {
-  res.send('Bienvenido a la API. Usa /api/register para registrarte y /api/login para iniciar sesión.');
+  res.send('Bienvenido al back del mundo de la tecnologia');
 });
 
-router.post('/login', userController.postLogin);
-router.post('/register', userController.postRegistro);
+router.post('/api/login', userController.postLogin);
+router.post('/api/register', userController.postRegistro);
 
 
 
