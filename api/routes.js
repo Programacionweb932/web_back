@@ -6,7 +6,9 @@ const userController = require('../controllers/userController');
 const router = express.Router();
 
 // Ruta de bienvenida
-
+router.get('/', (req, res) => {
+  res.send('Bienvenido al back del mundo de la tecnologia');
+});
 
 // Rutas para login y registro
 router.post('/login', userController.postLogin);
