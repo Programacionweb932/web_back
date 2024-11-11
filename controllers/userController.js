@@ -112,7 +112,7 @@ const postRegistro = async (req, res) => {
   
     try {
       // Buscar al usuario en la base de datos por su nombre
-      const user = await User.findOne({ name });
+      const user = await User.findOne({ email });
   
       if (!user) {
         return res.status(404).json({ error: 'Usuario no encontrado' });
@@ -146,7 +146,7 @@ const postRegistro = async (req, res) => {
   };
 
 
-  
+
   module.exports = {
 
     postLogin,
