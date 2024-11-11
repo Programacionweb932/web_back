@@ -106,12 +106,21 @@ const postRegistro = async (req, res) => {
   const postTicket = async (req, res) => {
     const { description, subject, email, name } = req.body;
   
+    if (!name || !email || !description || !subject) {
+      return res.status(400).json({ error: 'Faltan campos requeridos' });
+    }
+  
     try {
-      // Buscar al usuario en la base de datos por su email
+      // Buscar al usuario en la base de datos por su nombre
       const user = await User.findOne({ name });
-      
+  
       if (!user) {
         return res.status(404).json({ error: 'Usuario no encontrado' });
+      }
+  
+      // Validación de correo electrónico
+      if (!validator.isEmail(email)) {
+        return res.status(400).json({ error: 'Correo electrónico no válido' });
       }
   
       // Crear el ticket con el userId extraído del usuario
@@ -137,6 +146,7 @@ const postRegistro = async (req, res) => {
   };
 
 
+  
   module.exports = {
 
     postLogin,
