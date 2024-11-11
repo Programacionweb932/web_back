@@ -108,7 +108,7 @@ const postRegistro = async (req, res) => {
   
     try {
       // Buscar al usuario en la base de datos por su email
-      const user = await User.findOne({ email });
+      const user = await User.findOne({ name });
       
       if (!user) {
         return res.status(404).json({ error: 'Usuario no encontrado' });
