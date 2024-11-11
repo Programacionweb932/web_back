@@ -5,7 +5,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user'); 
-const Ticket = require('../models/ticket')
+const Ticket = require('../models/ticket');
 
 
 //                        Ruta de login
@@ -108,7 +108,7 @@ const postRegistro = async (req, res) => {
   
     try {
       // Buscar al usuario en la base de datos por su email
-      const user = await User.findOne({ name });
+      const user = await User.findOne({ email });
       
       if (!user) {
         return res.status(404).json({ error: 'Usuario no encontrado' });
