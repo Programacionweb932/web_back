@@ -5,6 +5,7 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user'); 
+const Ticket = require('../models/ticket')
 
 
 //                        Ruta de login
@@ -100,9 +101,46 @@ const postRegistro = async (req, res) => {
     }
   };
 
+
+  //               Creacion de Ticket usuario
+  const postTicket = async (req, res) => {
+    const { description, subject, email, name } = req.body;
+  
+    try {
+      // Buscar al usuario en la base de datos por su email
+      const user = await User.findOne({ name });
+      
+      if (!user) {
+        return res.status(404).json({ error: 'Usuario no encontrado' });
+      }
+  
+      // Crear el ticket con el userId extraído del usuario
+      const newTicket = new Ticket({
+        userId: user._id,  // Asigna el _id del usuario
+        description,
+        subject,
+        email,
+        name,
+        status: 'Pendiente', // Estado inicial del ticket
+        response: '', // Inicialmente sin respuesta
+        date: new Date(),
+      });
+  
+      // Guardar el ticket en la base de datos
+      await newTicket.save();
+  
+      res.status(201).json({ message: 'Ticket generado exitosamente', ticket: newTicket });
+    } catch (error) {
+      console.error('Error al generar el ticket:', error);
+      res.status(500).json({ error: 'Error en el servidor al generar el ticket' });
+    }
+  };
+
+
   module.exports = {
 
     postLogin,
     postRegistro,
-    postRegistroAdmin
+    postRegistroAdmin,
+    postTicket
   }
