@@ -2,6 +2,7 @@ const express = require('express');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user'); // Asegúrate de que el modelo 'User' esté bien importado
+const Ticket = require('../models/ticket.js');
 const userController = require('../controllers/userController');
 const router = express.Router();
 
