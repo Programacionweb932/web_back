@@ -15,5 +15,5 @@ router.get('/', (req, res) => {
 router.post('/login', userController.postLogin);
 router.post('/register', userController.postRegistro);
 router.post('/Adminregister', userController.postRegistroAdmin);
-router.post ('/ticket',userController.postTicket);
+router.post('/ticket', userController.postTicket);
 module.exports = router;
