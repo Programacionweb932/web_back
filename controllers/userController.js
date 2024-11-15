@@ -6,6 +6,7 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user'); 
 const Ticket = require('../models/ticket');
+const Admin = require('../models/Admin');
 
 
 //                        Ruta de login
@@ -60,46 +61,28 @@ const postRegistro = async (req, res) => {
 
   //            Registro Administrador
   const postRegistroAdmin = async (req, res) => {
-    const { usuario, contraseña } = req.body;
-  
-    // Validar que se hayan proporcionado usuario y contraseña
-    if (!usuario || !contraseña) {
-      return res.status(400).json({ status: "Error", message: "Usuario y contraseña son requeridos." });
-    }
-  
-    const hashedPassword = CryptoJS.SHA256(contraseña).toString(); // Encriptar la contraseña correctamente
-    console.log("Hashed Password during Registration:", hashedPassword);
-  
+    const { username, password } = req.body;
+
     try {
-      // Verificar si el usuario ya existe
-      const userExists = await pool.db('programacionweb').collection('users').findOne({ usuario: usuario });
-      if (userExists) {
-        return res.status(400).json({ status: "UsuarioYaExiste", message: "El usuario ya existe" });
-      }
-  
-      // Insertar el nuevo usuario en la colección users
-      const newUser = {
-        usuario: usuario,
-        psw: hashedPassword,
-        role: 'Admin', // Asignar un rol por defecto
-      };
-  
-      const userResult = await pool.db('programacionweb').collection('users').insertOne(newUser);
-      const userId = userResult.insertedId; // Obtener el ID del usuario insertado
-  
-      // Insertar información adicional del usuario en la colección user_info
-      const userInfo = {
-        user_id: userId,
-      };
-  
-      await pool.db('programacionweb').collection('user_info').insertOne(userInfo);
-  
-      res.status(201).json({ status: "UsuarioRegistrado", user: usuario, role: newUser.role });
+        // Verificar si el nombre de usuario ya existe
+        const adminExists = await Admin.findOne({ username });
+        if (adminExists) {
+            return res.status(400).json({ message: 'El nombre de usuario ya existe' });
+        }
+
+        // Hashear la contraseña
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Crear un nuevo administrador con el rol "admin"
+        const newAdmin = new Admin({ username, password: hashedPassword, role: 'admin' });
+        await newAdmin.save();
+
+        res.status(201).json({ message: 'Administrador registrado exitosamente' });
     } catch (error) {
-      console.error('Error registrando usuario:', error);
-      res.status(500).json({ status: "Error", message: "Internal Server Error" });
+        console.error('Error al registrar el administrador:', error);
+        res.status(500).json({ error: 'Error en el servidor al registrar el administrador' });
     }
-  };
+};
 
 
   //               Creacion de Ticket usuario
