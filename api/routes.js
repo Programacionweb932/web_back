@@ -14,6 +14,6 @@ router.get('/', (req, res) => {
 // Rutas para login y registro
 router.post('/login', userController.postLogin);
 router.post('/register', userController.postRegistro);
-router.post('/Adminregister', userController.postRegistroAdmin);
+router.post('/registroAdmin', userController.postRegistroAdmin);
 router.post('/ticket', userController.postTicket);
 module.exports = router;
