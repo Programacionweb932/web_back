@@ -1,9 +1,13 @@
 const mongoose = require('mongoose');
 
-const UserSchema = new mongoose.Schema({
-    email: { type: String, required: true, unique: true },
-    password: { type: String, required: true },
-    role: { type: String, default: 'user' } // 'user' o 'admin'
+let userSchema = new mongoose.Schema({
+  username: { type: String, required: true, unique: true },
+  email: { type: String, required: true, unique: true },
+  password: { type: String, required: true },
+  role: { type: String, enum: ['user', 'admin'], default: 'user' }  // Uso correcto de enum
 });
 
-module.exports = mongoose.model('User', UserSchema);
+// Asegúrate de que el modelo no se defina más de una vez
+const User = mongoose.models.User || mongoose.model('User', userSchema);
+
+module.exports = User;
