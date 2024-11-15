@@ -55,7 +55,7 @@ const postRegistro = async (req, res) => {
       const hashedPassword = await bcrypt.hash(password, 10);
 
       // Crear el nuevo usuario con el rol
-      const newUser = new User({ email, password: hashedPassword, role: userRole });
+      const newUser = new User({ username, email, password: hashedPassword, role: userRole });
 
       // Guardar el usuario en la base de datos
       await newUser.save();
@@ -70,38 +70,52 @@ const postRegistro = async (req, res) => {
 
   //            Registro Administrador
   const postRegistroAdmin = async (req, res) => {
-    const { username, email, password, role } = req.body;
-  
-    console.log('Datos recibidos:', req.body);  // Verifica si 'role' está llegando correctamente
-  
-    try {
-        // Verificar si el usuario ya existe
-        const userExists = await User.findOne({ $or: [{ username }, { email }] });
-        if (userExists) {
-            return res.status(400).json({ message: 'El nombre de usuario o correo electrónico ya existe' });
-        }
-  
-        // Asignar el rol, si no se pasa se asigna 'user' por defecto
-        const userRole = role || 'Admin'; // Si no se pasa el rol, se asigna 'admin'
-  
-        console.log('Rol asignado:', userRole);  // Verifica que el rol se asigna correctamente
-  
-        // Hashear la contraseña
-        const hashedPassword = await bcrypt.hash(password, 10);
-  
-        // Crear el nuevo usuario con el rol
-        const newUser = new User({ email, password: hashedPassword, role: userRole });
-  
-        // Guardar el usuario en la base de datos
-        await newUser.save();
-  
-        res.status(201).json({ message: 'Usuario registrado exitosamente' });
-    } catch (error) {
-        console.error('Error al registrar el usuario:', error);
-        res.status(500).json({ error: 'Error en el servidor al registrar el usuario' });
+  const { username, password, role } = req.body;
+
+  console.log('Datos recibidos:', req.body);
+
+  try {
+    // Validar los datos
+    if (!username || username.length < 3) {
+      return res.status(400).json({ message: 'El nombre de usuario debe tener al menos 3 caracteres.' });
     }
-  };
-  
+
+    if (!password || password.length < 6) {
+      return res.status(400).json({ message: 'La contraseña debe tener al menos 6 caracteres.' });
+    }
+
+    // Validar rol
+    const validRoles = ['admin', 'user'];
+    const userRole = role && validRoles.includes(role) ? role : 'admin';
+
+    console.log('Rol asignado:', userRole);
+
+    // Verificar si el usuario ya existe
+    const userExists = await User.findOne({ username });
+    if (userExists) {
+      return res.status(400).json({ message: 'El nombre de usuario ya existe.' });
+    }
+
+    // Hashear la contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Crear el nuevo usuario
+    const newUser = new User({
+      username,
+      password: hashedPassword,
+      role: userRole,
+    });
+
+    // Guardar el usuario en la base de datos
+    await newUser.save();
+
+    res.status(201).json({ message: 'Usuario registrado exitosamente' });
+  } catch (error) {
+    console.error('Error al registrar el usuario:', error.message, error.stack);
+    res.status(500).json({ message: 'Error en el servidor al registrar el usuario.' });
+  }
+};
+
   
 
   //               Creacion de Ticket usuario
