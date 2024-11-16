@@ -4,6 +4,7 @@ const jwt = require('jsonwebtoken');
 const User = require('../models/user'); // Asegúrate de que el modelo 'User' esté bien importado
 const Ticket = require('../models/ticket');
 const Admin = require('../models/Admin');
+const Agenda = require('../models/agenda');
 const userController = require('../controllers/userController');
 const router = express.Router();
 
@@ -17,4 +18,6 @@ router.post('/login', userController.postLogin);
 router.post('/register', userController.postRegistro);
 router.post('/Adminregister', userController.postRegistroAdmin);
 router.post('/ticket', userController.postTicket);
+router.post('/agenda', userController.postAgenda);
+router.get('/agenda/hours', userController.getHorasDisponibles);
 module.exports = router;
