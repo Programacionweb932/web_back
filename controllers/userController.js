@@ -35,46 +35,66 @@ const postLogin = async (req, res) => {
 
 //                        Ruta de registro
 const postRegistro = async (req, res) => {
-    const { username, email, password } = req.body;
-  
-    try {
-      // Verificar si el usuario ya existe
-      const userExists = await User.findOne({ $or: [{ username }, { email }] });
+  const { username, password } = req.body;
+
+  if (!username || !password) {
+      return res.status(400).json({ error: 'El nombre de usuario y la contraseña son obligatorios' });
+  }
+
+  try {
+      // Verificamos si el nombre de usuario ya existe
+      const userExists = await User.findOne({ username });
       if (userExists) {
-        return res.status(400).json({ message: 'El nombre de usuario o correo electrónico ya existe' });
+          return res.status(400).json({ message: 'El nombre de usuario ya existe' });
       }
-  
-      // Hashear la contraseña
+
+      // Hasheamos la contraseña antes de guardarla
       const hashedPassword = await bcrypt.hash(password, 10);
-  
-      // Crear un nuevo usuario
-      const newUser = new User({ username, email, password: hashedPassword });
+
+      // Creamos un nuevo usuario con el rol 'user' (por defecto)
+      const newUser = new User({
+          username,
+          password: hashedPassword,
+          role: 'user',  // Asignamos el rol 'user' por defecto
+      });
+
+      // Guardamos el nuevo usuario en la colección users
       await newUser.save();
-  
+
       res.status(201).json({ message: 'Usuario registrado exitosamente' });
-    } catch (error) {
+  } catch (error) {
       console.error('Error al registrar el usuario:', error);
       res.status(500).json({ error: 'Error en el servidor al registrar el usuario' });
-    }
-  };
-
+  }
+};
 
   //            Registro Administrador
+
   const postRegistroAdmin = async (req, res) => {
     const { username, password } = req.body;
 
+    if (!username || !password) {
+        return res.status(400).json({ error: 'El nombre de usuario y la contraseña son obligatorios' });
+    }
+
     try {
-        // Verificar si el nombre de usuario ya existe
-        const adminExists = await Admin.findOne({ username });
-        if (adminExists) {
+        // Verificamos si el nombre de usuario ya existe
+        const userExists = await User.findOne({ username });
+        if (userExists) {
             return res.status(400).json({ message: 'El nombre de usuario ya existe' });
         }
 
-        // Hashear la contraseña
+        // Hasheamos la contraseña antes de guardarla
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Crear un nuevo administrador con el rol "admin"
-        const newAdmin = new Admin({ username, password: hashedPassword, role: 'admin' });
+        // Creamos un nuevo usuario con el rol 'admin'
+        const newAdmin = new User({
+            username,
+            password: hashedPassword,
+            role: 'admin',  // Asignamos el rol 'admin'
+        });
+
+        // Guardamos el nuevo administrador en la colección users
         await newAdmin.save();
 
         res.status(201).json({ message: 'Administrador registrado exitosamente' });
@@ -83,6 +103,7 @@ const postRegistro = async (req, res) => {
         res.status(500).json({ error: 'Error en el servidor al registrar el administrador' });
     }
 };
+
 
 
   //               Creacion de Ticket usuario

@@ -1,29 +1,29 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
 
-const adminSchema = new mongoose.Schema({
-  username: { type: String, required: true, unique: true },
-  password: { 
-    type: String, 
-    required: true,
-    minlength: 8 // Validación de longitud mínima de la contraseña
-  },
-  role: { type: String, default: 'admin' },  // El rol predeterminado es 'admin'
+// Definición del esquema para el administrador
+const userSchema = new mongoose.Schema({
+    username: {
+        type: String,
+        required: true,  // El nombre de usuario es obligatorio
+        unique: true,    // Asegura que no haya dos administradores con el mismo nombre de usuario
+        minlength: [3, 'El nombre de usuario debe tener al menos 3 caracteres'], // Validación mínima
+        maxlength: [30, 'El nombre de usuario debe tener un máximo de 30 caracteres'], // Validación máxima
+    },
+    password: {
+        type: String,
+        required: true,  // La contraseña es obligatoria
+        minlength: [6, 'La contraseña debe tener al menos 6 caracteres'],  // Validación mínima de longitud
+    },
+    role: {
+        type: String,
+        enum: ['admin', 'user'],  // Solo puede ser 'admin' o 'user'
+        default: 'admin',         // Si no se especifica, se asigna el rol 'admin'
+    },
+}, {
+    timestamps: true, // Agrega automáticamente los campos 'createdAt' y 'updatedAt'
 });
 
-// Hook para encriptar la contraseña antes de guardarla
-adminSchema.pre('save', async function(next) {
-  if (this.isModified('password')) {
-    this.password = await bcrypt.hash(this.password, 10);
-  }
-  next();
-});
-
-// Método para comparar la contraseña
-adminSchema.methods.comparePassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password);
-};
-
-const Admin = mongoose.model('Admin', adminSchema);
+// Exportamos el modelo basado en el esquema
+const Admin = mongoose.model('Admin', userSchema);
 
 module.exports = Admin;
