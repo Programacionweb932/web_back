@@ -16,7 +16,7 @@ router.get('/', (req, res) => {
 // Rutas para login y registro
 router.post('/login', userController.postLogin);
 router.post('/register', userController.postRegistro);
-router.post('/Adminregister', userController.postRegistroAdmin);
+router.post('/adminregister', userController.postRegistroAdmin);
 router.post('/ticket', userController.postTicket);
 router.post('/agenda', userController.postAgenda);
 router.get('/agenda/hours', userController.getHorasDisponibles);

@@ -36,15 +36,15 @@ const postLogin = async (req, res) => {
 
 //                        Ruta de registro
 const postRegistro = async (req, res) => {
-  const { username, password } = req.body;
+  const { username, email, password } = req.body;
 
-  if (!username || !password) {
+  if (!username || !password || !email) {
       return res.status(400).json({ error: 'El nombre de usuario y la contraseña son obligatorios' });
   }
 
   try {
       // Verificamos si el nombre de usuario ya existe
-      const userExists = await User.findOne({ username });
+      const userExists = await User.findOne({ email });
       if (userExists) {
           return res.status(400).json({ message: 'El nombre de usuario ya existe' });
       }
@@ -55,6 +55,7 @@ const postRegistro = async (req, res) => {
       // Creamos un nuevo usuario con el rol 'user' (por defecto)
       const newUser = new User({
           username,
+          email,
           password: hashedPassword,
           role: 'user',  // Asignamos el rol 'user' por defecto
       });
@@ -80,7 +81,7 @@ const postRegistro = async (req, res) => {
 
     try {
         // Verificamos si el nombre de usuario ya existe
-        const userExists = await User.findOne({ username });
+        const userExists = await Admin.findOne({ username });
         if (userExists) {
             return res.status(400).json({ message: 'El nombre de usuario ya existe' });
         }
@@ -88,8 +89,8 @@ const postRegistro = async (req, res) => {
         // Hasheamos la contraseña antes de guardarla
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Creamos un nuevo usuario con el rol 'admin'
-        const newAdmin = new User({
+        // Creamos un nuevo administrador con el rol 'admin'
+        const newAdmin = new Admin({
             username,
             password: hashedPassword,
             role: 'admin',  // Asignamos el rol 'admin'
@@ -101,10 +102,9 @@ const postRegistro = async (req, res) => {
         res.status(201).json({ message: 'Administrador registrado exitosamente' });
     } catch (error) {
         console.error('Error al registrar el administrador:', error);
-        res.status(500).json({ error: 'Error en el servidor al registrar el administrador' });
+        res.status(500).json({ error: `Error al registrar el administrador: ${error.message}` });
     }
 };
-
 
 
   //               Creacion de Ticket usuario
