@@ -10,6 +10,7 @@ const Admin = require('../models/Admin');
 const Agenda = require('../models/agenda');
 
 
+
 //                        Ruta de login
 const postLogin = async (req, res) => {
   try {
@@ -21,32 +22,62 @@ const postLogin = async (req, res) => {
       return res.status(400).json({ msg: 'Usuario no encontrado' });
     }
 
+    // Compara las contraseñas
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ msg: 'Contraseña incorrecta' });
     }
 
-    const token = jwt.sign({ userId: user._id }, 'secret', { expiresIn: '1h' });
-    res.json({ token });
+    // Generar token JWT
+    const token = jwt.sign({ userId: user._id, role: user.role }, 'secret', { expiresIn: '1h' });
+
+    // Enviar token y datos del usuario en la respuesta
+    res.json({
+      token,
+      message: 'Inicio de sesión exitoso',
+      user: {
+        username: user.username,
+        email: user.email,
+        role: user.role,  // Asegúrate de enviar el role
+      }
+    });
   } catch (err) {
-    console.error('Error in login:', err);
+    console.error('Error en login:', err);
     res.status(500).json({ msg: 'Error del servidor' });
   }
 };
 
-//                        Ruta de registro
+
+const verifyToken = (req, res, next) => {
+  const token = req.headers['authorization'] && req.headers['authorization'].split(' ')[1]; // Obtener el token después de "Bearer"
+
+  if (!token) {
+    return res.status(403).json({ msg: 'Acceso denegado. Token no proporcionado.' });
+  }
+
+  jwt.verify(token, 'secret', (err, decoded) => {
+    if (err) {
+      return res.status(403).json({ msg: 'Token inválido o expirado.' });
+    }
+    req.userId = decoded.userId; // Guardar el userId del token en la solicitud
+    next(); // Continuar con la siguiente función
+  });
+};
+
+
+
 const postRegistro = async (req, res) => {
   const { username, email, password } = req.body;
 
-  if (!username || !password || !email) {
-      return res.status(400).json({ error: 'El nombre de usuario y la contraseña son obligatorios' });
+  if (!username || !email || !password) {
+      return res.status(400).json({ error: 'El nombre de usuario, email y la contraseña son obligatorios' });
   }
 
   try {
-      // Verificamos si el nombre de usuario ya existe
-      const userExists = await User.findOne({ email });
+      // Verificamos si el nombre de usuario o el email ya existen
+      const userExists = await User.findOne({ $or: [{ username }, { email }] });
       if (userExists) {
-          return res.status(400).json({ message: 'El nombre de usuario ya existe' });
+          return res.status(400).json({ message: 'El nombre de usuario o el email ya existen' });
       }
 
       // Hasheamos la contraseña antes de guardarla
@@ -55,7 +86,7 @@ const postRegistro = async (req, res) => {
       // Creamos un nuevo usuario con el rol 'user' (por defecto)
       const newUser = new User({
           username,
-          email,
+          email,  // Guardamos el email
           password: hashedPassword,
           role: 'user',  // Asignamos el rol 'user' por defecto
       });
@@ -69,31 +100,35 @@ const postRegistro = async (req, res) => {
       res.status(500).json({ error: 'Error en el servidor al registrar el usuario' });
   }
 };
-
   //            Registro Administrador
 
   const postRegistroAdmin = async (req, res) => {
-    const { username, password } = req.body;
+    const { username, email, password } = req.body;
 
-    if (!username || !password) {
-        return res.status(400).json({ error: 'El nombre de usuario y la contraseña son obligatorios' });
+    if (!username || !email || !password) {
+        return res
+            .status(400)
+            .json({ error: 'El nombre de usuario, correo electrónico y contraseña son obligatorios' });
     }
 
     try {
-        // Verificamos si el nombre de usuario ya existe
-        const userExists = await Admin.findOne({ username });
+        // Verificamos si el nombre de usuario o correo ya existe
+        const userExists = await User.findOne({ $or: [{ username }, { email }] });
         if (userExists) {
-            return res.status(400).json({ message: 'El nombre de usuario ya existe' });
+            return res
+                .status(400)
+                .json({ message: 'El nombre de usuario o correo electrónico ya existe' });
         }
 
         // Hasheamos la contraseña antes de guardarla
         const hashedPassword = await bcrypt.hash(password, 10);
 
-        // Creamos un nuevo administrador con el rol 'admin'
-        const newAdmin = new Admin({
+        // Creamos un nuevo usuario con el rol 'admin'
+        const newAdmin = new User({
             username,
+            email,
             password: hashedPassword,
-            role: 'admin',  // Asignamos el rol 'admin'
+            role: 'admin', // Asignamos el rol 'admin'
         });
 
         // Guardamos el nuevo administrador en la colección users
@@ -101,8 +136,8 @@ const postRegistro = async (req, res) => {
 
         res.status(201).json({ message: 'Administrador registrado exitosamente' });
     } catch (error) {
-        console.error('Error al registrar el administrador:', error);
-        res.status(500).json({ error: `Error al registrar el administrador: ${error.message}` });
+        console.error('Error al guardar el administrador:', error);
+        return res.status(500).json({ error: 'Error en el servidor al guardar el administrador' });
     }
 };
 
@@ -140,6 +175,50 @@ const postRegistro = async (req, res) => {
       res.status(500).json({ error: 'Error en el servidor al generar el ticket' });
     }
   };
+  const getTicketHistory = async (email) => {
+    try {
+      
+     
+  // Buscar al usuario por su email para obtener su userId
+      const user = await User.findOne({ email });
+      if (!user) {
+        throw new Error('Usuario no encontrado');
+      }
+  
+      // Obtener todos los tickets asociados al userId
+      const tickets = await Ticket.find({ userId: user._id }).sort({ date: -1 }); // Ordenar por fecha descendente
+  
+      return tickets;
+    } catch (error) {
+      throw new Error(error.message);
+    }
+  };
+
+  const fetchHistorialTicket = async (req, res) => {
+    const { email } = req.body;  // Obtén el email de la solicitud
+  
+    // Verifica si el email está presente
+    if (!email) {
+      return res.status(400).json({ error: 'El email es obligatorio.' });
+    }
+  
+    try {
+      // Aquí iría la lógica para obtener el historial de tickets de la base de datos
+      // Asumimos que tienes una función llamada getTicketHistory que obtiene los tickets
+      const tickets = await getTicketHistory(email); // Obtén los tickets para el usuario
+  
+      if (tickets && tickets.length > 0) {
+        return res.status(200).json({ tickets });  // Devuelve los tickets si los encuentra
+      } else {
+        return res.status(404).json({ message: 'No se encontraron tickets para este usuario.' });
+      }
+    } catch (error) {
+      console.error(error);
+      return res.status(500).json({ error: 'Ocurrió un error al obtener el historial de tickets.' });
+    }
+  };
+  
+  
 
 //               Creacion de cita usuario
 const postAgenda = async (req, res) => {
@@ -231,5 +310,8 @@ module.exports = {
   postRegistroAdmin,
   postTicket,
   getHorasDisponibles,
-  postAgenda
+  postAgenda,
+  fetchHistorialTicket,
+  getTicketHistory,
+  verifyToken
 }
