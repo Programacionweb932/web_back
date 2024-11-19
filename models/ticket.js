@@ -1,4 +1,3 @@
-// En el modelo Ticket
 const mongoose = require('mongoose');
 
 const ticketSchema = new mongoose.Schema({
@@ -19,6 +18,10 @@ const ticketSchema = new mongoose.Schema({
   status: {
     type: String,
     default: 'Pendiente'
+  },
+  adminDescription: { // Nueva descripción proporcionada por el administrador
+    type: String,
+    default: ''
   },
   response: String,
   date: {
