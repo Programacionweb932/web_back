@@ -6,6 +6,7 @@ const Ticket = require('../models/ticket');
 const Admin = require('../models/Admin');
 const Agenda = require('../models/agenda');
 const userController = require('../controllers/userController');
+const { ActualizarEstadoTicket } = require('../controllers/userController');
 const router = express.Router();
 
 // Ruta de bienvenida
@@ -23,6 +24,7 @@ router.get('/agenda/hours', userController.getHorasDisponibles);
 router.post('/tickets/history', userController.fetchHistorialTicket);
 router.post('/token', userController.verifyToken);
 router.get('/tickets/all', userController.getallticket);
+router.put('/tickets/actualizar-estado', ActualizarEstadoTicket);
 
 
 

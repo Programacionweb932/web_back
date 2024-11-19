@@ -323,6 +323,31 @@ const getallticket = async (req, res) => {
   }
 };
 
+
+//              Actualizar ticket 
+
+const ActualizarEstadoTicket = async (req, res) => {
+const { ticketId, status } = req.body;
+
+try {
+  // Encuentra el ticket por su ID y actualiza su estado
+  const updatedTicket = await Ticket.findByIdAndUpdate(
+    ticketId,
+    { status }, // Actualiza solo el campo de estado
+    { new: true } // Devuelve el documento actualizado
+  );
+
+  if (!updatedTicket) {
+    return res.status(404).json({ message: 'Ticket no encontrado.' });
+  }
+
+  res.status(200).json({ message: 'Estado actualizado exitosamente.', ticket: updatedTicket });
+} catch (error) {
+  console.error(error);
+  res.status(500).json({ message: 'Error al actualizar el estado del ticket.' });
+}
+};
+
 module.exports = {
 
   postLogin,
@@ -334,5 +359,6 @@ module.exports = {
   fetchHistorialTicket,
   getTicketHistory,
   verifyToken,
-  getallticket
+  getallticket,
+  ActualizarEstadoTicket
 }
