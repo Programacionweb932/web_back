@@ -22,6 +22,8 @@ router.post('/agenda', userController.postAgenda);
 router.get('/agenda/hours', userController.getHorasDisponibles);
 router.post('/tickets/history', userController.fetchHistorialTicket);
 router.post('/token', userController.verifyToken);
+router.get('/api/tickets/all', userController.getallticket);
+
 
 
 module.exports = router;

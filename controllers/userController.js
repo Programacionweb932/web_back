@@ -303,6 +303,26 @@ const getHorasDisponibles = async (req, res) => {
   }
 };
 
+
+
+//               todos los tickets 
+
+
+const getallticket = async (req, res) => {
+  try {
+    const tickets = await Ticket.find(); // Obtener todos los tickets de todos los usuarios
+
+    if (tickets.length > 0) {
+      return res.json({ tickets }); // Enviar los tickets en la respuesta
+    } else {
+      return res.status(404).json({ message: 'No se encontraron tickets en la base de datos.' }); // No hay tickets
+    }
+  } catch (error) {
+    console.error(error); // Imprimir el error en la consola para depuración
+    return res.status(500).json({ error: 'Error al obtener los tickets.' }); // Error del servidor
+  }
+};
+
 module.exports = {
 
   postLogin,
@@ -313,5 +333,6 @@ module.exports = {
   postAgenda,
   fetchHistorialTicket,
   getTicketHistory,
-  verifyToken
+  verifyToken,
+  getallticket
 }

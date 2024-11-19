@@ -13,6 +13,8 @@ app.use(cors());
 // Usar el enrutador para todas las rutas que comienzan con /api
 app.use('/api', router);
 
+
+
 // Conectar a MongoDB
 const mongoURI = process.env.MONGO_URI;
 if (!mongoURI) {
