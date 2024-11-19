@@ -326,7 +326,7 @@ const getallticket = async (req, res) => {
 
 //              Actualizar ticket 
 
-const actualizarEstadoTicket = async (req, res) => {
+const ActualizarEstadoTicket = async (req, res) => {
   try {
     const { ticketId, status, adminDescription } = req.body;
 
