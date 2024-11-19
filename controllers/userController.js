@@ -327,24 +327,29 @@ const getallticket = async (req, res) => {
 //              Actualizar ticket 
 
 const ActualizarEstadoTicket = async (req, res) => {
-  const { ticketId, status, adminDescription } = req.body;
-
   try {
-    const ticket = await Ticket.findById(ticketId);
+    const { ticketId, status, adminDescription } = req.body;
 
+    if (!ticketId || !status) {
+      return res.status(400).json({ message: 'El ticketId y el estado son obligatorios.' });
+    }
+
+    const ticket = await Ticket.findById(ticketId);
     if (!ticket) {
       return res.status(404).json({ message: 'Ticket no encontrado.' });
     }
 
+    // Actualizar el estado y la descripción del ticket
     ticket.status = status;
-    ticket.adminDescription = adminDescription || ticket.adminDescription;
+    if (adminDescription) {
+      ticket.adminDescription = adminDescription;
+    }
 
     await ticket.save();
-
-    return res.json({ message: 'Estado del ticket y descripción actualizados.', ticket });
+    return res.status(200).json({ message: 'Estado del ticket actualizado correctamente.' });
   } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Error al actualizar el ticket.' });
+    console.error('Error al actualizar el ticket:', error);
+    return res.status(500).json({ message: 'Error interno del servidor.' });
   }
 };
 
