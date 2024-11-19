@@ -327,25 +327,25 @@ const getallticket = async (req, res) => {
 //              Actualizar ticket 
 
 const ActualizarEstadoTicket = async (req, res) => {
-  const { ticketId, status, adminDescription } = req.body;
+const { ticketId, status } = req.body;
 
-  try {
-    const ticket = await Ticket.findById(ticketId);
+try {
+  // Encuentra el ticket por su ID y actualiza su estado
+  const updatedTicket = await Ticket.findByIdAndUpdate(
+    ticketId,
+    { status }, // Actualiza solo el campo de estado
+    { new: true } // Devuelve el documento actualizado
+  );
 
-    if (!ticket) {
-      return res.status(404).json({ message: 'Ticket no encontrado.' });
-    }
-
-    ticket.status = status;
-    ticket.adminDescription = adminDescription || ticket.adminDescription;
-
-    await ticket.save();
-
-    return res.json({ message: 'Estado del ticket y descripción actualizados.', ticket });
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'Error al actualizar el ticket.' });
+  if (!updatedTicket) {
+    return res.status(404).json({ message: 'Ticket no encontrado.' });
   }
+
+  res.status(200).json({ message: 'Estado actualizado exitosamente.', ticket: updatedTicket });
+} catch (error) {
+  console.error(error);
+  res.status(500).json({ message: 'Error al actualizar el estado del ticket.' });
+}
 };
 
 module.exports = {
