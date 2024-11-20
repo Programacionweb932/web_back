@@ -341,7 +341,7 @@ const ActualizarEstadoTicket = async (req, res) => {
 
     await ticket.save();
 
-    return res.json({ message: 'Estado del ticket actualizado exitosamente.', ticket });
+    return res.json({ message: 'El ticket fue actualizado exitosamente.', ticket });
   } catch (error) {
     console.error(error);
     return res.status(500).json({ error: 'Error al actualizar el estado del ticket.' });
