@@ -326,23 +326,20 @@ const getallticket = async (req, res) => {
 
 //              Actualizar ticket 
 
-const ActualizarEstadoTicket = async (req, res) => {
-  const { ticketId, status, adminDescription } = req.body;
-
+const ActualizarEstadoTicket = async (ticketId, adminDescription) => {
   try {
     const ticket = await Ticket.findById(ticketId);
     if (!ticket) {
-      return res.status(404).json({ message: 'Ticket no encontrado.' });
+      throw new Error('Ticket no encontrado');
     }
 
-    ticket.status = status || ticket.status;
-    ticket.adminDescription = adminDescription || ticket.adminDescription;
-
+    // Actualizar la descripción del administrador
+    ticket.adminDescription = adminDescription;
     await ticket.save();
-    res.json({ message: 'Ticket actualizado con éxito.' });
+
+    return ticket;
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ message: 'Error al actualizar el ticket.' });
+    throw new Error(error.message);
   }
 };
 
