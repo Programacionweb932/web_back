@@ -222,7 +222,9 @@ const postRegistro = async (req, res) => {
 
 //               Creacion de cita usuario
 const postAgenda = async (req, res) => {
-  const { hora, date, email, name } = req.body;
+  const { hora, date, email, name, tipoServicio } = req.body;
+
+  console.log('Datos recibidos en el backend:', { hora, date, email, name, tipoServicio }); 
 
   // Función para validar que la hora esté entre las 8:00 AM y las 4:30 PM
   const isValidTime = (time) => {
@@ -255,6 +257,20 @@ const postAgenda = async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
+    // Validar que tipoServicio sea válido
+    const validServicios = [
+      'Mantenimiento Preventivo y Correctivo',
+      'Instalación de Sistemas Operativos',
+      'Reparación de Portátiles y PC',
+      'Asistencia Técnica y Remota',
+      'Instalación de Paquetes Microsoft Office',
+      'Otro',
+    ];
+
+    if (!validServicios.includes(tipoServicio)) {
+      return res.status(400).json({ error: 'Tipo de servicio no válido' });
+    }
+
     // Crear la cita con el userId extraído del usuario
     const newAgenda = new Agenda({
       userId: user._id, // Asigna el _id del usuario
@@ -262,6 +278,7 @@ const postAgenda = async (req, res) => {
       date,
       email,
       name,
+      tipoServicio,
       status: 'reservada', // Marca la cita como reservada
     });
 
@@ -277,11 +294,13 @@ const postAgenda = async (req, res) => {
   }
 };
 
+
 const getHorasDisponibles = async (req, res) => {
   const { date } = req.query; // La fecha será enviada como parámetro en la URL
 
   try {
-    const reservedHours = await Agenda.find({ date }).select('hora'); // Obtener las horas ya reservadas
+    // Obtener las horas reservadas para la fecha específica
+    const reservedHours = await Agenda.find({ date }).select('hora'); 
     const reservedSet = new Set(reservedHours.map((agenda) => agenda.hora)); // Convertir a un Set para búsqueda rápida
 
     // Generar todas las horas posibles de 8:00 AM a 4:30 PM en intervalos de 20 minutos
@@ -290,7 +309,7 @@ const getHorasDisponibles = async (req, res) => {
       for (let minute of [0, 20, 40]) {
         const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         if (hour === 16 && minute > 30) break; // Limitar hasta 4:30 PM
-        if (!reservedSet.has(time)) {
+        if (!reservedSet.has(time)) { // Si la hora no está reservada, la agregamos
           allHours.push(time);
         }
       }
@@ -303,6 +322,39 @@ const getHorasDisponibles = async (req, res) => {
   }
 };
 
+// Función para cancelar una cita de usuario
+const cancelarCita = async (req, res) => {
+  const { agendaId } = req.body;  // Recibe el id de la cita a cancelar
+
+  try {
+    // Buscar la cita por su ID
+    const agenda = await Agenda.findById(agendaId);
+
+    if (!agenda) {
+      return res.status(404).json({ error: 'Cita no encontrada' });
+    }
+
+    // Verificar si la cita ya está cancelada o completada
+    if (agenda.status === 'cancelada') {
+      return res.status(400).json({ error: 'La cita ya está cancelada' });
+    }
+
+    if (agenda.status === 'completada') {
+      return res.status(400).json({ error: 'No se puede cancelar una cita completada' });
+    }
+
+    // Actualizar el estado de la cita a 'cancelada'
+    agenda.status = 'cancelada';
+
+    // Guardar la cita con el nuevo estado
+    await agenda.save();
+
+    return res.status(200).json({ message: 'Cita cancelada exitosamente', agenda });
+  } catch (error) {
+    console.error('Error al cancelar la cita:', error);
+    return res.status(500).json({ error: 'Error en el servidor al cancelar la cita' });
+  }
+};
 
 
 //               todos los tickets 
@@ -348,6 +400,50 @@ const ActualizarEstadoTicket = async (req, res) => {
   }
 };
 
+// Controlador para obtener el historial de citas
+const fetchHistorialCitas = async (req, res) => {
+  try {
+    const agendas = await Agendas.find();
+
+    if (agendas.length > 0) {
+      return res.json({ appointments: agendas }); // Cambia la clave a `appointments` para coincidir con el frontend
+    } else {
+      return res.status(404).json({ message: 'No se encontraron citas en la base de datos.' });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al obtener las citas.' });
+  }
+};
+
+module.exports = { fetchHistorialCitas };
+
+// Ruta para que los usuarios vean sus propias citas agendadas
+const fetchMisCitas = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Verificar si el usuario existe
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Obtener las citas asociadas al usuario logueado
+    const citas = await Agenda.find({ userId: user._id }).sort({ date: -1 }); // Ordenar por fecha descendente
+
+    if (citas && citas.length > 0) {
+      return res.status(200).json({ citas });
+    } else {
+      return res.status(404).json({ message: 'No se encontraron citas para este usuario.' });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al obtener las citas del usuario.' });
+  }
+};
+
+
 
 module.exports = {
 
@@ -361,5 +457,8 @@ module.exports = {
   getTicketHistory,
   verifyToken,
   getallticket,
-  ActualizarEstadoTicket
+  ActualizarEstadoTicket,
+  fetchMisCitas,
+  fetchHistorialCitas,
+  cancelarCita
 }

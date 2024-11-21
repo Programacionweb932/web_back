@@ -25,5 +25,7 @@ router.post('/tickets/history', userController.fetchHistorialTicket);
 router.post('/token', userController.verifyToken);
 router.get('/tickets/all', userController.getallticket);
 router.put('/tickets/actualizar-estado', ActualizarEstadoTicket);
+router.get('/historial-citas',userController.fetchHistorialCitas); // Solo para administradores
+router.get('/mis-citas', userController.fetchMisCitas); // Para todos los usuario
 
 module.exports = router;
