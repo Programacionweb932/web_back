@@ -15,8 +15,15 @@ const Agenda = require('../models/agenda');
 const postLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
+
+    if (!username || !password) {
+      console.error('Error: Campos vacíos:', { username, password });
+      return res.status(400).json({ msg: 'Todos los campos son obligatorios.' });
+    }
+
     console.log('Request received for login:', { username, password });
 
+    // Buscar el usuario por nombre de usuario
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(400).json({ msg: 'Usuario no encontrado' });
@@ -29,7 +36,11 @@ const postLogin = async (req, res) => {
     }
 
     // Generar token JWT
-    const token = jwt.sign({ userId: user._id, role: user.role }, 'secret', { expiresIn: '1h' });
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      'secret',
+      { expiresIn: '1h' }
+    );
 
     // Enviar token y datos del usuario en la respuesta
     res.json({
@@ -38,8 +49,8 @@ const postLogin = async (req, res) => {
       user: {
         username: user.username,
         email: user.email,
-        role: user.role,  // Asegúrate de enviar el role
-      }
+        role: user.role,
+      },
     });
   } catch (err) {
     console.error('Error en login:', err);
