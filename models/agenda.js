@@ -23,6 +23,11 @@ const agendaSchema = new mongoose.Schema({
     type: String,
     required: true, // Nombre del usuario
   },
+  tipoServicio: {
+    type: String,
+    required: true,
+
+  },
   status: {
     type: String,
     enum: ['reservada', 'cancelada', 'completada'],

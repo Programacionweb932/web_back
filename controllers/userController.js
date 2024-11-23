@@ -64,7 +64,7 @@ const verifyToken = (req, res, next) => {
   });
 };
 
-
+//     REGISTRO USUARIO 
 
 const postRegistro = async (req, res) => {
   const { username, email, password } = req.body;
@@ -194,6 +194,9 @@ const postRegistro = async (req, res) => {
     }
   };
 
+
+//        Historila de Tickets
+
   const fetchHistorialTicket = async (req, res) => {
     const { email } = req.body;  // Obtén el email de la solicitud
   
@@ -203,8 +206,7 @@ const postRegistro = async (req, res) => {
     }
   
     try {
-      // Aquí iría la lógica para obtener el historial de tickets de la base de datos
-      // Asumimos que tienes una función llamada getTicketHistory que obtiene los tickets
+   
       const tickets = await getTicketHistory(email); // Obtén los tickets para el usuario
   
       if (tickets && tickets.length > 0) {
@@ -222,7 +224,9 @@ const postRegistro = async (req, res) => {
 
 //               Creacion de cita usuario
 const postAgenda = async (req, res) => {
-  const { hora, date, email, name } = req.body;
+  const { hora, date, email, name, tipoServicio } = req.body;
+
+  console.log('Datos recibidos en el backend:', { hora, date, email, name, tipoServicio }); 
 
   // Función para validar que la hora esté entre las 8:00 AM y las 4:30 PM
   const isValidTime = (time) => {
@@ -255,6 +259,20 @@ const postAgenda = async (req, res) => {
       return res.status(404).json({ error: 'Usuario no encontrado' });
     }
 
+    // Validar que tipoServicio sea válido
+    const validServicios = [
+      'Mantenimiento Preventivo y Correctivo',
+      'Instalación de Sistemas Operativos',
+      'Reparación de Portátiles y PC',
+      'Asistencia Técnica y Remota',
+      'Instalación de Paquetes Microsoft Office',
+      'Otro',
+    ];
+
+    if (!validServicios.includes(tipoServicio)) {
+      return res.status(400).json({ error: 'Tipo de servicio no válido' });
+    }
+
     // Crear la cita con el userId extraído del usuario
     const newAgenda = new Agenda({
       userId: user._id, // Asigna el _id del usuario
@@ -262,6 +280,7 @@ const postAgenda = async (req, res) => {
       date,
       email,
       name,
+      tipoServicio,
       status: 'reservada', // Marca la cita como reservada
     });
 
@@ -277,11 +296,13 @@ const postAgenda = async (req, res) => {
   }
 };
 
+
 const getHorasDisponibles = async (req, res) => {
   const { date } = req.query; // La fecha será enviada como parámetro en la URL
 
   try {
-    const reservedHours = await Agenda.find({ date }).select('hora'); // Obtener las horas ya reservadas
+    // Obtener las horas reservadas para la fecha específica
+    const reservedHours = await Agenda.find({ date }).select('hora'); 
     const reservedSet = new Set(reservedHours.map((agenda) => agenda.hora)); // Convertir a un Set para búsqueda rápida
 
     // Generar todas las horas posibles de 8:00 AM a 4:30 PM en intervalos de 20 minutos
@@ -290,7 +311,7 @@ const getHorasDisponibles = async (req, res) => {
       for (let minute of [0, 20, 40]) {
         const time = `${hour.toString().padStart(2, '0')}:${minute.toString().padStart(2, '0')}`;
         if (hour === 16 && minute > 30) break; // Limitar hasta 4:30 PM
-        if (!reservedSet.has(time)) {
+        if (!reservedSet.has(time)) { // Si la hora no está reservada, la agregamos
           allHours.push(time);
         }
       }
@@ -302,8 +323,6 @@ const getHorasDisponibles = async (req, res) => {
     res.status(500).json({ error: 'Error al obtener las horas disponibles' });
   }
 };
-
-
 
 //               todos los tickets 
 
@@ -349,6 +368,7 @@ const ActualizarEstadoTicket = async (req, res) => {
 };
 
 
+
 module.exports = {
 
   postLogin,
@@ -361,5 +381,5 @@ module.exports = {
   getTicketHistory,
   verifyToken,
   getallticket,
-  ActualizarEstadoTicket
+  ActualizarEstadoTicket,
 }
