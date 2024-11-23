@@ -15,8 +15,15 @@ const Agenda = require('../models/agenda');
 const postLogin = async (req, res) => {
   try {
     const { username, password } = req.body;
+
+    if (!username || !password) {
+      console.error('Error: Campos vacíos:', { username, password });
+      return res.status(400).json({ msg: 'Todos los campos son obligatorios.' });
+    }
+
     console.log('Request received for login:', { username, password });
 
+    // Buscar el usuario por nombre de usuario
     const user = await User.findOne({ username });
     if (!user) {
       return res.status(400).json({ msg: 'Usuario no encontrado' });
@@ -29,7 +36,11 @@ const postLogin = async (req, res) => {
     }
 
     // Generar token JWT
-    const token = jwt.sign({ userId: user._id, role: user.role }, 'secret', { expiresIn: '1h' });
+    const token = jwt.sign(
+      { userId: user._id, role: user.role },
+      'secret',
+      { expiresIn: '1h' }
+    );
 
     // Enviar token y datos del usuario en la respuesta
     res.json({
@@ -38,8 +49,8 @@ const postLogin = async (req, res) => {
       user: {
         username: user.username,
         email: user.email,
-        role: user.role,  // Asegúrate de enviar el role
-      }
+        role: user.role,
+      },
     });
   } catch (err) {
     console.error('Error en login:', err);
@@ -367,7 +378,48 @@ const ActualizarEstadoTicket = async (req, res) => {
   }
 };
 
+// Controlador para obtener el historial de citas
+const fetchHistorialCitas = async (req, res) => {
+  try {
+    const agendas = await Agendas.find();
 
+    if (agendas.length > 0) {
+      return res.json({ appointments: agendas }); // Cambia la clave a `appointments` para coincidir con el frontend
+    } else {
+      return res.status(404).json({ message: 'No se encontraron citas en la base de datos.' });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al obtener las citas.' });
+  }
+};
+
+module.exports = { fetchHistorialCitas };
+
+// Ruta para que los usuarios vean sus propias citas agendadas
+const fetchMisCitas = async (req, res) => {
+  try {
+    const { email } = req.body;
+
+    // Verificar si el usuario existe
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(404).json({ error: 'Usuario no encontrado' });
+    }
+
+    // Obtener las citas asociadas al usuario logueado
+    const citas = await Agenda.find({ userId: user._id }).sort({ date: -1 }); // Ordenar por fecha descendente
+
+    if (citas && citas.length > 0) {
+      return res.status(200).json({ citas });
+    } else {
+      return res.status(404).json({ message: 'No se encontraron citas para este usuario.' });
+    }
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ error: 'Error al obtener las citas del usuario.' });
+  }
+};
 
 module.exports = {
 

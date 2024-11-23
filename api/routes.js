@@ -26,5 +26,4 @@ router.post('/token', userController.verifyToken);
 router.get('/tickets/all', userController.getallticket);
 router.put('/tickets/actualizar-estado', ActualizarEstadoTicket);
 
-
 module.exports = router;
